@@ -1,103 +1,137 @@
-// index.js
 let url = "http://localhost:3000/ramens";
-
-fetch(url)
-  .then(response => response.json())
-  .then(data => {
-    console.log(data);
-    data.forEach(ramen => {
-      displayRamens(ramen);
-    });
-  })
-  .catch(error => console.log(error));
-
-// Callbacks
-function handleSubmit(e) {
-  e.preventDefault();
-
-  const newRamen = {
-    name: document.querySelector("#new-name").value,
-    restaurant: document.querySelector("#new-restaurant").value,
-    image: document.querySelector("#new-image").value,
-    rating: document.querySelector("#new-rating").value,
-    comment: document.querySelector("#new-comment").value
-  };
-
-  const ramenMenuDiv = document.getElementById('ramen-menu');
-
-  // Add new ramen image to the menu
-  const ramenFoods = document.createElement("div");
-  ramenFoods.classList.add("ramen");
-  ramenFoods.innerHTML = `
-    <img src="${newRamen.image}" alt="${newRamen.name}">
-  `;
-  ramenMenuDiv.appendChild(ramenFoods);
-
-  // Attach click event to the ramen
-  const img = ramenFoods.querySelector('img');
-  if (img) {
-    img.addEventListener('click', (e) => {
-      handleClick(newRamen, e);
-    });
-  } else {
-    console.error('Image not found in the DOM');
-  }
-
-  // Reset form after submission
-  event.target.reset();
-}
-
-// Adding the submit listener
-function addSubmitListener(form) {
-  form.addEventListener('submit', handleSubmit);
-}
+document.addEventListener("DOMContentLoaded", () => {
+  main();
+});
 
 // Main function to set everything up
 function main() {
-  let ramenForm = document.getElementById('new-ramen');
-  addSubmitListener(ramenForm);
-
-  // Load existing ramens from db.json
+  addSubmitListener();
+  
+  // display db.json
   fetch(url)
     .then(response => response.json())
     .then(data => {
       data.forEach(ramen => {
         displayRamens(ramen);
       });
+
+      // Display the first ramen details
+      if (data.length > 0) {
+        handleClick(data[0]); // Show details for the first ramen
+      }
     })
     .catch(error => console.log(error));
 }
 
 // Displaying the ramen when the page loads
 function displayRamens(ramen) {
-
   let ramenFoods = document.createElement("div");
   ramenFoods.classList.add("ramen");
-  ramenFoods.innerHTML = `
-    <img src="${ramen.image}" alt="${ramen.name}">
-  `;
-
-  let ramenList = document.getElementById('ramen-menu');
-  ramenList.appendChild(ramenFoods);
-
-  // Add click event to the image
-  let img = ramenFoods.querySelector('img');
+  
+  let img = document.createElement("img");
+  img.src = ramen.image;
   img.addEventListener('click', () => handleClick(ramen));
 
-  console.log(ramen)
+  let name = document.createElement("p");
+  name.textContent = ramen.name;
+
+  // Add delete button
+  let deleteButton = document.createElement("button");
+  deleteButton.textContent = "Delete";
+  deleteButton.addEventListener('click', () => handleDelete(ramen.id, ramenFoods));
+
+  ramenFoods.appendChild(img);
+  ramenFoods.appendChild(name);
+  ramenFoods.appendChild(deleteButton); // Append delete button
+
+  let ramenList = document.getElementById("ramen-menu");
+  ramenList.appendChild(ramenFoods);
 }
 
-function handleClick(ramen){
-    // Get the div where you want to display the details
-    let ramenDetail = document.getElementById("ramen-detail");
-    ramenDetail.innerHTML = `
-        <img src="${ramen.image}" alt="Image of ${ramen.name}" style="width:200px; height:auto;">
-        <h2>${ramen.name}</h2>
-        <h3>${ramen.restaurant}</h3>
-    `;
+// Click callback
+function handleClick(ramen) {
+  let ramenDetail = document.getElementById("ramen-detail");
+  ramenDetail.innerHTML = `
+      <img src="${ramen.image}" alt="Image of ${ramen.name}" style="width:200px; height:auto;">
+      <form id="update-form">
+        <h4>Rating: <input type="number" name="rating" value="${ramen.rating || ""}" /></h4>
+        <p>Comment: <input type="text" name="comment" value="${ramen.comment || ""}" /></p>
+        <button type="submit">Update</button>
+      </form>
+  `;
+  
+  // Add event listener for the update form
+  document.getElementById("update-form").addEventListener("submit", (event) => {
+    event.preventDefault();
+    updateRamen(ramen.id);
+  });
 }
-// Invoke the main function
-// main();
+
+// Adding the submit listener (POST)
+function addSubmitListener() {
+  document.getElementById("new-ramen").addEventListener("submit", (event) => {
+    event.preventDefault();
+    const formdata = new FormData(event.target);
+    const newData = {
+      name: formdata.get('name'),
+      restaurant: formdata.get('restaurant'),
+      image: formdata.get('image'),
+      rating: formdata.get('rating'),
+      comment: formdata.get('new-comment')
+    };
+
+    fetch(url, {
+      method: "POST",
+      headers: {
+        'Content-Type': "application/json"
+      },
+      body: JSON.stringify(newData)
+    })
+      .then(response => response.json())
+      .then(() => {
+        displayRamens(newData);
+      })
+      .catch(error => console.log(error));
+  });
+}
+
+// Handle deletion of ramen
+function handleDelete(id, ramenDiv) {
+  fetch(`${url}/${id}`, {
+    method: "DELETE"
+  })
+    .then(() => {
+      ramenDiv.remove(); // Remove the ramen from the DOM
+      console.log(`Ramen with id ${id} deleted`);
+    })
+    .catch(error => console.log(error));
+}
+
+// Update ramen functionality
+function updateRamen(id) {
+  const ramenDetail = document.getElementById("ramen-detail");
+  const rating = ramenDetail.querySelector('input[name="rating"]').value;
+  const comment = ramenDetail.querySelector('input[name="comment"]').value;
+
+  const updatedData = {
+    rating,
+    comment
+  };
+
+  fetch(`${url}/${id}`, {
+    method: "PATCH",
+    headers: {
+      'Content-Type': "application/json"
+    },
+    body: JSON.stringify(updatedData)
+  })
+    .then(() => {
+      console.log(`Ramen with id ${id} updated`);
+      // Optionally refresh the ramen details in the UI
+      handleClick({ ...updatedData, id });
+    })
+    .catch(error => console.log(error));
+}
 
 // Export functions for testing
 export {
