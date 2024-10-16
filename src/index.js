@@ -38,7 +38,7 @@ function displayRamens(ramen) {
 
   ramenFoods.appendChild(img);
   ramenFoods.appendChild(name);
-  ramenFoods.appendChild(deleteButton); // Append delete button
+  ramenFoods.appendChild(deleteButton);
 
   let ramenList = document.getElementById("ramen-menu");
   ramenList.appendChild(ramenFoods);
@@ -118,8 +118,6 @@ function updateRamen(id) {
   })
     .then(() => {
       console.log(`Ramen with id ${id} updated`);
-      // Optionally refresh the ramen details in the UI
-      handleClick({ ...updatedData, id });
     })
     .catch(error => console.log(error));
 }
