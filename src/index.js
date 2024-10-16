@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
   main();
 })
 
+//fetch function
 function main() {
   addSubmitListener();
   
@@ -21,6 +22,7 @@ function main() {
     .catch(error => console.log(error));
 }
 
+//displayed ramens
 function displayRamens(ramen) {
   let ramenFoods = document.createElement("div");
   ramenFoods.classList.add("ramen");
@@ -44,6 +46,7 @@ function displayRamens(ramen) {
   ramenList.appendChild(ramenFoods);
 }
 
+//click
 function handleClick(ramen) {
   let ramenDetail = document.getElementById("ramen-detail");
   ramenDetail.innerHTML = `
@@ -61,6 +64,7 @@ function handleClick(ramen) {
   });
 }
 
+//post part
 function addSubmitListener() {
   document.getElementById("new-ramen").addEventListener("submit", (event) => {
     event.preventDefault();
@@ -88,6 +92,7 @@ function addSubmitListener() {
   });
 }
 
+//delete part
 function handleDelete(id, ramenDiv) {
   fetch(`${url}/${id}`, {
     method: "DELETE"
@@ -99,6 +104,7 @@ function handleDelete(id, ramenDiv) {
     .catch(error => console.log(error));
 }
 
+//update part
 function updateRamen(id) {
   const ramenDetail = document.getElementById("ramen-detail");
   const rating = ramenDetail.querySelector('input[name="rating"]').value;
