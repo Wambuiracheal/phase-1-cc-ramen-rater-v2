@@ -1,13 +1,11 @@
 let url = "http://localhost:3000/ramens";
 document.addEventListener("DOMContentLoaded", () => {
   main();
-});
+})
 
-// Main function to set everything up
 function main() {
   addSubmitListener();
   
-  // display db.json
   fetch(url)
     .then(response => response.json())
     .then(data => {
@@ -17,13 +15,12 @@ function main() {
 
       // Display the first ramen details
       if (data.length > 0) {
-        handleClick(data[0]); // Show details for the first ramen
+        handleClick(data[0]);
       }
     })
     .catch(error => console.log(error));
 }
 
-// Displaying the ramen when the page loads
 function displayRamens(ramen) {
   let ramenFoods = document.createElement("div");
   ramenFoods.classList.add("ramen");
@@ -35,7 +32,6 @@ function displayRamens(ramen) {
   let name = document.createElement("p");
   name.textContent = ramen.name;
 
-  // Add delete button
   let deleteButton = document.createElement("button");
   deleteButton.textContent = "Delete";
   deleteButton.addEventListener('click', () => handleDelete(ramen.id, ramenFoods));
@@ -48,7 +44,6 @@ function displayRamens(ramen) {
   ramenList.appendChild(ramenFoods);
 }
 
-// Click callback
 function handleClick(ramen) {
   let ramenDetail = document.getElementById("ramen-detail");
   ramenDetail.innerHTML = `
@@ -60,14 +55,12 @@ function handleClick(ramen) {
       </form>
   `;
   
-  // Add event listener for the update form
   document.getElementById("update-form").addEventListener("submit", (event) => {
     event.preventDefault();
     updateRamen(ramen.id);
   });
 }
 
-// Adding the submit listener (POST)
 function addSubmitListener() {
   document.getElementById("new-ramen").addEventListener("submit", (event) => {
     event.preventDefault();
@@ -95,19 +88,17 @@ function addSubmitListener() {
   });
 }
 
-// Handle deletion of ramen
 function handleDelete(id, ramenDiv) {
   fetch(`${url}/${id}`, {
     method: "DELETE"
   })
     .then(() => {
-      ramenDiv.remove(); // Remove the ramen from the DOM
+      ramenDiv.remove();
       console.log(`Ramen with id ${id} deleted`);
     })
     .catch(error => console.log(error));
 }
 
-// Update ramen functionality
 function updateRamen(id) {
   const ramenDetail = document.getElementById("ramen-detail");
   const rating = ramenDetail.querySelector('input[name="rating"]').value;
